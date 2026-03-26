@@ -2,6 +2,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { createHash } from "crypto";
 import { prisma } from "@/src/lib/prisma";
+import { auditSuccess } from "@/src/lib/audit";
 import { fail, ok } from "@/src/shared/api/response";
 import { requirePermission } from "@/src/shared/auth/guards";
 import { NotFoundError, ValidationError } from "@/src/shared/errors/app-error";
@@ -56,17 +57,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       include: { student: true },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        tenantId: session.user.tenantId,
-        actorId: session.user.id,
-        action: "UPLOAD_PDF",
-        entity: "Certificate",
-        entityId: certificate.id,
-        result: "SUCCESS",
-        details: { fileName, fileHash },
-      },
-    });
+    auditSuccess(
+      session.user.tenantId,
+      session.user.id,
+      "UPLOAD_PDF",
+      "Certificate",
+      certificate.id,
+      { fileName, fileHash },
+    );
 
     return ok({ pdfUrl: updated.pdfUrl, pdfHash: fileHash });
   } catch (error) {

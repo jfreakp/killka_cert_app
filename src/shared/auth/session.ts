@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/src/lib/prisma";
+import { audit, AuditAction } from "@/src/lib/audit";
 import { loginSchema } from "@/src/shared/auth/schemas";
 
 export const authOptions: NextAuthOptions = {
@@ -27,10 +28,34 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
         });
-        if (!user) return null;
+
+        if (!user) {
+          /* Log failed attempt — unknown user, no tenantId available */
+          return null;
+        }
 
         const valid = await compare(parsed.data.password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          audit({
+            tenantId: user.tenantId,
+            actorId: user.id,
+            action: AuditAction.FAILED_LOGIN,
+            entity: "Session",
+            result: "FAILURE",
+            details: { email: parsed.data.email, reason: "invalid_password" },
+          });
+          return null;
+        }
+
+        /* Successful login */
+        audit({
+          tenantId: user.tenantId,
+          actorId: user.id,
+          action: AuditAction.LOGIN,
+          entity: "Session",
+          result: "SUCCESS",
+          details: { email: user.email },
+        });
 
         return {
           id: user.id,

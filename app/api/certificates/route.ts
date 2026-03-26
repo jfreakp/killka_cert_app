@@ -1,6 +1,7 @@
 import { randomUUID, createHash } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/src/lib/prisma";
+import { auditSuccess } from "@/src/lib/audit";
 import { fail, ok } from "@/src/shared/api/response";
 import { requirePermission } from "@/src/shared/auth/guards";
 import {
@@ -129,17 +130,14 @@ export async function POST(request: Request) {
       include: { student: true, tenant: true },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        tenantId: session.user.tenantId,
-        actorId: session.user.id,
-        action: "ISSUE_CERTIFICATE",
-        entity: "Certificate",
-        entityId: certificate.id,
-        result: "SUCCESS",
-        details: { title: certificate.title, student: student.studentCode },
-      },
-    });
+    auditSuccess(
+      session.user.tenantId,
+      session.user.id,
+      "ISSUE_CERTIFICATE",
+      "Certificate",
+      certificate.id,
+      { title: certificate.title, student: student.studentCode, serialNumber, degree: parsed.data.degree },
+    );
 
     return ok(certificate, 201);
   } catch (error) {

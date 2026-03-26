@@ -1,4 +1,5 @@
 import { prisma } from "@/src/lib/prisma";
+import { auditSuccess } from "@/src/lib/audit";
 import { fail, ok } from "@/src/shared/api/response";
 import { requirePermission } from "@/src/shared/auth/guards";
 import { NotFoundError, ValidationError } from "@/src/shared/errors/app-error";
@@ -32,17 +33,14 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       include: { student: true, tenant: true },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        tenantId: session.user.tenantId,
-        actorId: session.user.id,
-        action: "REVOKE_CERTIFICATE",
-        entity: "Certificate",
-        entityId: certificate.id,
-        result: "SUCCESS",
-        details: { serialNumber: certificate.serialNumber },
-      },
-    });
+    auditSuccess(
+      session.user.tenantId,
+      session.user.id,
+      "REVOKE_CERTIFICATE",
+      "Certificate",
+      certificate.id,
+      { serialNumber: certificate.serialNumber },
+    );
 
     return ok(updated);
   } catch (error) {

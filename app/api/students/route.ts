@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/src/lib/prisma";
+import { auditSuccess } from "@/src/lib/audit";
 import { fail, ok } from "@/src/shared/api/response";
 import { requirePermission } from "@/src/shared/auth/guards";
 import { ValidationError } from "@/src/shared/errors/app-error";
@@ -45,16 +46,14 @@ export async function POST(request: Request) {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        tenantId: session.user.tenantId,
-        actorId: session.user.id,
-        action: "CREATE_STUDENT",
-        entity: "Student",
-        entityId: student.id,
-        result: "SUCCESS",
-      },
-    });
+    auditSuccess(
+      session.user.tenantId,
+      session.user.id,
+      "CREATE_STUDENT",
+      "Student",
+      student.id,
+      { studentCode: parsed.data.studentCode, name: `${parsed.data.firstName} ${parsed.data.lastName}` },
+    );
 
     return ok(student, 201);
   } catch (error) {
