@@ -1,65 +1,53 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <body className="bg-surface font-body text-on-surface min-h-screen flex items-center justify-center p-6 selection:bg-primary-container selection:text-on-primary-container relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[60%] rounded-full bg-primary-container/20 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[70%] rounded-full bg-secondary-container/30 blur-[120px]" />
+      </div>
+
+      <main className="relative z-10 w-full max-w-2xl">
+        <div className="bg-surface-container-lowest rounded-xl p-10 shadow-[0_32px_64px_-12px_rgba(0,180,216,0.1)] border border-outline-variant/10 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-tertiary" />
+
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-on-primary" style={{ fontVariationSettings: "'FILL' 1" }}>generating_tokens</span>
+            </div>
+            <span className="font-headline text-2xl font-extrabold tracking-tighter text-primary">KillkaCert</span>
+          </div>
+
+          <h1 className="font-headline text-4xl font-black tracking-tight text-on-surface mb-4">Certificación Académica Digital</h1>
+          <p className="text-on-surface-variant text-lg leading-relaxed">
+            Plataforma de gestión y verificación de certificados digitales académicos sobre Polygon.
           </p>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link
+              href="/login"
+              className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]"
+            >
+              <span className="material-symbols-outlined text-[20px]">login</span>
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/dashboard"
+              className="px-6 py-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low text-primary font-bold transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">dashboard</span>
+              Ir al dashboard
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="mt-8 flex justify-center items-center gap-2 text-on-surface-variant/60">
+          <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
+          <span className="text-xs font-medium tracking-wide uppercase">Asegurado por Polygon Ledger</span>
         </div>
       </main>
-    </div>
+    </body>
   );
 }

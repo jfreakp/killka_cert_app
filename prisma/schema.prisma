@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  ISSUER
+  AUDITOR
+}
+
+enum CertificateStatus {
+  DRAFT
+  ISSUED
+  REVOKED
+}
+
+model University {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  users        User[]
+  students     Student[]
+  certificates Certificate[]
+  auditLogs    AuditLog[]
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String?
+  passwordHash        String
+  role                UserRole
+  tenantId            String
+  tenant              University           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  auditLogs           AuditLog[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model Student {
+  id             String        @id @default(cuid())
+  tenantId       String
+  tenant         University    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentCode    String
+  firstName      String
+  lastName       String
+  email          String?
+  career         String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  certificates   Certificate[]
+
+  @@unique([tenantId, studentCode])
+  @@index([tenantId])
+}
+
+model Certificate {
+  id             String            @id @default(cuid())
+  tenantId       String
+  tenant         University        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  serialNumber   String
+  publicCode     String            @unique
+  title          String
+  status         CertificateStatus @default(DRAFT)
+  issuedAt       DateTime?
+  revokedAt      DateTime?
+  pdfUrl         String?
+  qrPayloadHash  String?
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([tenantId, serialNumber])
+  @@index([tenantId, status, issuedAt])
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      University  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action      String
+  entity      String
+  entityId    String?
+  result      String
+  ipAddress   String?
+  userAgent   String?
+  details     Json?
+  createdAt   DateTime    @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([action, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
