@@ -84,7 +84,7 @@ export default function VerifyLandingPage() {
               <span className="material-symbols-outlined text-on-primary">verified</span>
             </div>
             <span className="font-headline text-2xl font-extrabold tracking-tighter text-primary">
-              Rikuchik
+              KillkaCert
             </span>
           </div>
         </Link>
@@ -248,7 +248,7 @@ export default function VerifyLandingPage() {
             </span>
           </div>
           <p className="text-xs text-on-surface-variant/40">
-            Sistema de verificación operado por Rikuchik &bull; Integridad garantizada por
+            Sistema de verificación operado por KillkaCert &bull; Integridad garantizada por
             criptografía
           </p>
         </div>

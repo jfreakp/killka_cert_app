@@ -49,6 +49,10 @@
   /* Outline */
   --color-outline: #747779;
   --color-outline-variant: #abadaf;
+
+  /* Accent */
+  --color-accent-turquoise: #00E0D2;
+  --color-inverse-surface: #001112;
 }
 
 body {
@@ -74,6 +78,12 @@ body {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .input-accent:focus-within {

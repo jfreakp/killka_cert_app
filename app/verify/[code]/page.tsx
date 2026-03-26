@@ -40,7 +40,7 @@ export default function VerifyPage({ params }: { params: Promise<{ code: string 
       {/* Brand */}
       <Link href="/" className="mb-8">
         <h1 className="text-2xl font-black font-headline text-primary tracking-tight">
-          Rikuchik
+          KillkaCert
         </h1>
         <p className="text-xs text-on-surface-variant text-center">Verificación de certificados</p>
       </Link>
