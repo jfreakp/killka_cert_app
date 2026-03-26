@@ -1,78 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Navbar, PermissionGate } from "@/src/shared/ui";
-
-interface CertificateRow {
-  id: string;
-  serialNumber: string;
-  status: string;
-  issuedAt: string | null;
-  student: { firstName: string; lastName: string; studentCode: string };
-}
-
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  DRAFT: {
-    label: "Borrador",
-    className: "bg-surface-container-low text-on-surface-variant",
-  },
-  ISSUED: {
-    label: "Emitido",
-    className: "bg-primary-container text-on-primary-container",
-  },
-  REVOKED: {
-    label: "Revocado",
-    className: "bg-error-container text-on-error-container",
-  },
-};
+import {
+  useCertificates,
+  revokeCertificate,
+} from "@/src/modules/certificates/hooks";
+import {
+  CertificateTable,
+  CertificateFilters,
+  Pagination,
+} from "@/src/modules/certificates/components";
 
 export default function CertificatesPage() {
-  const [certificates, setCertificates] = useState<CertificateRow[]>([]);
-  const [filter, setFilter] = useState("ALL");
+  const [status, setStatus] = useState("ALL");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [debounced, setDebounced] = useState("");
 
-  useEffect(() => {
-    fetch("/api/certificates")
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.ok) setCertificates(json.data);
-      })
-      .catch(() => {});
+  /* Debounce search */
+  const handleSearch = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+    const id = setTimeout(() => setDebounced(value), 400);
+    return () => clearTimeout(id);
   }, []);
 
-  const filtered =
-    filter === "ALL" ? certificates : certificates.filter((c) => c.status === filter);
+  const { data, loading, refetch } = useCertificates({
+    status,
+    search: debounced,
+    page,
+  });
+
+  async function handleRevoke(id: string, serial: string) {
+    if (!confirm(`¿Revocar el certificado ${serial}? Esta acción no se puede deshacer.`)) return;
+    const json = await revokeCertificate(id);
+    if (json.ok) refetch();
+    else alert(json.message || "Error al revocar");
+  }
 
   return (
     <>
-      <Navbar title="Certificados">
-        <div className="flex gap-2">
-          {["ALL", "DRAFT", "ISSUED", "REVOKED"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                filter === f
-                  ? "bg-primary text-on-primary shadow-md"
-                  : "text-on-surface-variant hover:bg-surface-container-low"
-              }`}
-            >
-              {f === "ALL" ? "Todos" : STATUS_MAP[f]?.label ?? f}
-            </button>
-          ))}
-        </div>
-      </Navbar>
+      <Navbar title="Certificados" />
 
       <div className="pt-24 px-12 pb-12">
         {/* Hero */}
-        <div className="flex justify-between items-end mb-12">
+        <div className="flex justify-between items-end mb-10">
           <div className="max-w-2xl">
             <h1 className="text-5xl font-black text-on-surface font-headline tracking-tight mb-4">
               Gestión de Certificados
             </h1>
             <p className="text-on-surface-variant text-lg leading-relaxed">
               Emite, revisa y gestiona los certificados académicos digitales. Cada certificado
-              genera un código único de verificación en la red Polygon.
+              genera un código QR único de verificación y un hash criptográfico de integridad.
             </p>
           </div>
           <PermissionGate permission="certificates:create">
@@ -86,49 +67,52 @@ export default function CertificatesPage() {
           </PermissionGate>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-on-surface-variant">
-              No se encontraron certificados.
-            </div>
-          ) : (
-            filtered.map((cert) => {
-              const st = STATUS_MAP[cert.status] ?? STATUS_MAP.DRAFT;
-              return (
-                <div
-                  key={cert.id}
-                  className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${st.className}`}>
-                      {st.label}
-                    </span>
-                    <button className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-surface-container-low transition-all">
-                      <span className="material-symbols-outlined text-on-surface-variant text-[20px]">
-                        more_vert
-                      </span>
-                    </button>
-                  </div>
-
-                  <h3 className="font-bold text-lg mb-1">
-                    {cert.student.firstName} {cert.student.lastName}
-                  </h3>
-                  <p className="text-sm text-on-surface-variant mb-4 font-mono">
-                    {cert.serialNumber}
-                  </p>
-
-                  <div className="flex justify-between items-center text-xs text-on-surface-variant">
-                    <span>{cert.student.studentCode}</span>
-                    {cert.issuedAt && (
-                      <span>{new Date(cert.issuedAt).toLocaleDateString("es-EC")}</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+        {/* Filters */}
+        <div className="mb-6">
+          <CertificateFilters
+            status={status}
+            search={search}
+            onStatusChange={(s) => {
+              setStatus(s);
+              setPage(1);
+            }}
+            onSearchChange={handleSearch}
+          />
         </div>
+
+        {/* Stats bar */}
+        {data && (
+          <div className="flex gap-6 mb-6 text-sm">
+            <span className="text-on-surface-variant">
+              <strong className="text-on-surface">{data.total}</strong> certificados encontrados
+            </span>
+          </div>
+        )}
+
+        {/* Table */}
+        {loading ? (
+          <div className="py-20 text-center">
+            <span className="material-symbols-outlined animate-spin text-primary text-[40px]">
+              progress_activity
+            </span>
+            <p className="text-on-surface-variant mt-4">Cargando certificados...</p>
+          </div>
+        ) : (
+          <>
+            <CertificateTable
+              certificates={data?.certificates ?? []}
+              onRevoke={handleRevoke}
+            />
+            {data && (
+              <Pagination
+                page={data.page}
+                pages={data.pages}
+                total={data.total}
+                onPageChange={setPage}
+              />
+            )}
+          </>
+        )}
       </div>
     </>
   );

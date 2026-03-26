@@ -10,4 +10,8 @@ export interface Certificate {
   status: CertificateStatus;
   issuedAt: Date | null;
   revokedAt: Date | null;
+  pdfUrl: string | null;
+  qrPayloadHash: string | null;
+  metadata: Record<string, unknown> | null;
 }
+

@@ -94,6 +94,7 @@ export function getPermissions(role: Role): readonly Permission[] {
 
 export const ROUTE_PERMISSIONS: [string, Permission][] = [
   ["/dashboard/certificates/new", P["certificates:create"]],
+  ["/dashboard/certificates/", P["certificates:list"]],
   ["/dashboard/certificates", P["certificates:list"]],
   ["/dashboard/students", P["students:list"]],
   ["/dashboard/users", P["users:list"]],
