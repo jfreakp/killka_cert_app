@@ -1,20 +1,21 @@
 "use client";
 
-import { Navbar } from "@/src/shared/ui";
+import { Navbar, PermissionGate } from "@/src/shared/ui";
+import { ROLE_LABELS } from "@/src/shared/auth/permissions";
 
 const MOCK_USERS = [
   { id: "1", name: "Admin Principal", email: "admin@rikuchik.ec", role: "SUPER_ADMIN" },
 ];
 
 const ROLE_MAP: Record<string, { label: string; className: string }> = {
-  SUPER_ADMIN: { label: "Super Admin", className: "bg-error-container text-on-error-container" },
-  TENANT_ADMIN: {
-    label: "Admin Tenant",
+  SUPER_ADMIN: { label: ROLE_LABELS.SUPER_ADMIN, className: "bg-error-container text-on-error-container" },
+  UNIVERSITY: {
+    label: ROLE_LABELS.UNIVERSITY,
     className: "bg-tertiary-container text-on-tertiary-container",
   },
-  ISSUER: { label: "Emisor", className: "bg-primary-container text-on-primary-container" },
-  AUDITOR: {
-    label: "Auditor",
+  OPERATOR: { label: ROLE_LABELS.OPERATOR, className: "bg-primary-container text-on-primary-container" },
+  VERIFIER: {
+    label: ROLE_LABELS.VERIFIER,
     className: "bg-secondary-container text-on-secondary-container",
   },
 };
@@ -36,10 +37,12 @@ export default function UsersPage() {
               según la responsabilidad institucional.
             </p>
           </div>
-          <button className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]">
-            <span className="material-symbols-outlined">person_add</span>
-            Invitar Usuario
-          </button>
+          <PermissionGate permission="users:create">
+            <button className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]">
+              <span className="material-symbols-outlined">person_add</span>
+              Invitar Usuario
+            </button>
+          </PermissionGate>
         </div>
 
         {/* Table */}
@@ -86,11 +89,13 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10">
-                          Editar
-                        </button>
-                      </div>
+                      <PermissionGate permission="users:edit">
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button className="px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10">
+                            Editar
+                          </button>
+                        </div>
+                      </PermissionGate>
                     </td>
                   </tr>
                 );

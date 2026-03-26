@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Sidebar } from "@/src/shared/ui";
+import { Sidebar, PermissionGate } from "@/src/shared/ui";
 
 export default function DashboardLayout({
   children,
@@ -30,15 +30,17 @@ export default function DashboardLayout({
       <Sidebar />
       <main className="ml-64 min-h-screen">{children}</main>
 
-      {/* Floating Action Button */}
-      <button className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary text-on-primary shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
-        <span
-          className="material-symbols-outlined text-3xl"
-          style={{ fontVariationSettings: "'FILL' 0, 'wght' 600" }}
-        >
-          add
-        </span>
-      </button>
+      {/* Floating Action Button — only for users who can create certificates */}
+      <PermissionGate permission="certificates:create">
+        <button className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary text-on-primary shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+          <span
+            className="material-symbols-outlined text-3xl"
+            style={{ fontVariationSettings: "'FILL' 0, 'wght' 600" }}
+          >
+            add
+          </span>
+        </button>
+      </PermissionGate>
     </div>
   );
 }

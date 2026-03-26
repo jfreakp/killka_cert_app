@@ -2,20 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePermissions } from "@/src/shared/auth/hooks";
+import type { Permission } from "@/src/shared/auth/permissions";
 
 export interface NavItem {
   label: string;
   icon: string;
   href: string;
+  permission?: Permission;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Panel de Control", icon: "dashboard", href: "/dashboard" },
-  { label: "Estudiantes", icon: "group", href: "/dashboard/students" },
-  { label: "Certificados", icon: "generating_tokens", href: "/dashboard/certificates" },
-  { label: "Usuarios", icon: "manage_accounts", href: "/dashboard/users" },
-  { label: "Auditoría", icon: "history", href: "/dashboard/audit" },
-  { label: "Configuración", icon: "settings", href: "/dashboard/settings" },
+  { label: "Panel de Control", icon: "dashboard", href: "/dashboard", permission: "dashboard:view" },
+  { label: "Estudiantes", icon: "group", href: "/dashboard/students", permission: "students:list" },
+  { label: "Certificados", icon: "generating_tokens", href: "/dashboard/certificates", permission: "certificates:list" },
+  { label: "Usuarios", icon: "manage_accounts", href: "/dashboard/users", permission: "users:list" },
+  { label: "Auditoría", icon: "history", href: "/dashboard/audit", permission: "audit:list" },
+  { label: "Configuración", icon: "settings", href: "/dashboard/settings", permission: "settings:view" },
 ];
 
 const BOTTOM_ITEMS: NavItem[] = [
@@ -25,11 +28,16 @@ const BOTTOM_ITEMS: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { can } = usePermissions();
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   }
+
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.permission || can(item.permission),
+  );
 
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 bg-slate-50 flex flex-col p-4 space-y-2 z-40">
@@ -41,7 +49,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map((item) => (
+        {visibleItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -58,13 +66,15 @@ export default function Sidebar() {
       </nav>
 
       <div className="mt-auto pt-4 space-y-1">
-        <Link
-          href="/dashboard/certificates/new"
-          className="w-full mb-4 bg-primary text-on-primary py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-dim transition-colors active:scale-95"
-        >
-          <span className="material-symbols-outlined">add</span>
-          <span>Nuevo Certificado</span>
-        </Link>
+        {can("certificates:create") && (
+          <Link
+            href="/dashboard/certificates/new"
+            className="w-full mb-4 bg-primary text-on-primary py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-dim transition-colors active:scale-95"
+          >
+            <span className="material-symbols-outlined">add</span>
+            <span>Nuevo Certificado</span>
+          </Link>
+        )}
         {BOTTOM_ITEMS.map((item) => (
           <Link
             key={item.label}

@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Navbar } from "@/src/shared/ui";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { Navbar, PermissionGate } from "@/src/shared/ui";
+import { usePermissions } from "@/src/shared/auth/hooks";
+import { ROLE_LABELS, type Role } from "@/src/shared/auth/permissions";
 
 interface Metrics {
   totalStudents: number;
@@ -13,7 +17,18 @@ interface Metrics {
 }
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const { data: session } = useSession();
+  const { can, role } = usePermissions();
+  const searchParams = useSearchParams();
+  const forbidden = searchParams.get("forbidden");
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
@@ -29,6 +44,14 @@ export default function DashboardPage() {
     <>
       <Navbar title="Panel de Control" />
       <div className="pt-24 px-12 pb-12">
+        {/* Forbidden alert */}
+        {forbidden && (
+          <div className="mb-6 rounded-xl bg-error-container/10 border border-error-container/30 px-5 py-4 flex items-center gap-3">
+            <span className="material-symbols-outlined text-error">block</span>
+            <p className="text-sm font-medium text-error">No tienes permisos para acceder a esa secci\u00F3n.</p>
+          </div>
+        )}
+
         {/* Hero Header */}
         <div className="flex justify-between items-end mb-12">
           <div className="max-w-2xl">
@@ -36,8 +59,13 @@ export default function DashboardPage() {
               Bienvenido, {session?.user?.name ?? "Admin"}
             </h1>
             <p className="text-on-surface-variant text-lg leading-relaxed">
-              Gestiona los logros académicos en la red Polygon. Vista general del estado de la plataforma.
+              Gestiona los logros acad\u00E9micos en la red Polygon. Vista general del estado de la plataforma.
             </p>
+            {role && (
+              <span className="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-primary-container/30 text-primary uppercase tracking-wider">
+                {ROLE_LABELS[role as Role]}
+              </span>
+            )}
           </div>
         </div>
 
@@ -73,24 +101,30 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-3 gap-6">
-          <QuickActionCard
-            icon="group"
-            title="Registrar Estudiantes"
-            description="Agrega nuevos estudiantes o importa datos en lote."
-            href="/dashboard/students"
-          />
-          <QuickActionCard
-            icon="generating_tokens"
-            title="Emitir Certificados"
-            description="Genera certificados individuales o masivos."
-            href="/dashboard/certificates"
-          />
-          <QuickActionCard
-            icon="history"
-            title="Ver Auditoría"
-            description="Revisa el historial de acciones del sistema."
-            href="/dashboard/audit"
-          />
+          <PermissionGate permission="students:create">
+            <QuickActionCard
+              icon="group"
+              title="Registrar Estudiantes"
+              description="Agrega nuevos estudiantes o importa datos en lote."
+              href="/dashboard/students"
+            />
+          </PermissionGate>
+          <PermissionGate permission="certificates:create">
+            <QuickActionCard
+              icon="generating_tokens"
+              title="Emitir Certificados"
+              description="Genera certificados individuales o masivos."
+              href="/dashboard/certificates"
+            />
+          </PermissionGate>
+          <PermissionGate permission="audit:list">
+            <QuickActionCard
+              icon="history"
+              title="Ver Auditoría"
+              description="Revisa el historial de acciones del sistema."
+              href="/dashboard/audit"
+            />
+          </PermissionGate>
         </div>
       </div>
     </>

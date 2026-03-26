@@ -33,46 +33,46 @@ async function main() {
     },
   });
 
-  // Tenant Admin
+  // University Admin
   await prisma.user.upsert({
     where: { email: "admin@rikuchik.ec" },
     update: {
       passwordHash,
       tenantId: tenant.id,
-      role: "TENANT_ADMIN",
-      name: "Admin Rikuchik",
+      role: "UNIVERSITY",
+      name: "Admin Universidad",
     },
     create: {
       email: "admin@rikuchik.ec",
-      name: "Admin Rikuchik",
+      name: "Admin Universidad",
       passwordHash,
-      role: "TENANT_ADMIN",
+      role: "UNIVERSITY",
       tenantId: tenant.id,
     },
   });
 
-  // Issuer
+  // Operator
   await prisma.user.upsert({
     where: { email: "emisor@rikuchik.ec" },
-    update: { passwordHash, tenantId: tenant.id, role: "ISSUER", name: "Emisor Demo" },
+    update: { passwordHash, tenantId: tenant.id, role: "OPERATOR", name: "Operador Demo" },
     create: {
       email: "emisor@rikuchik.ec",
-      name: "Emisor Demo",
+      name: "Operador Demo",
       passwordHash,
-      role: "ISSUER",
+      role: "OPERATOR",
       tenantId: tenant.id,
     },
   });
 
-  // Auditor
+  // Verifier
   await prisma.user.upsert({
     where: { email: "auditor@rikuchik.ec" },
-    update: { passwordHash, tenantId: tenant.id, role: "AUDITOR", name: "Auditor Demo" },
+    update: { passwordHash, tenantId: tenant.id, role: "VERIFIER", name: "Verificador Demo" },
     create: {
       email: "auditor@rikuchik.ec",
-      name: "Auditor Demo",
+      name: "Verificador Demo",
       passwordHash,
-      role: "AUDITOR",
+      role: "VERIFIER",
       tenantId: tenant.id,
     },
   });
@@ -112,9 +112,9 @@ async function main() {
 
   console.log("Seed completado con usuarios:");
   console.log("  superadmin@rikuchik.ec / Admin12345! (SUPER_ADMIN)");
-  console.log("  admin@rikuchik.ec      / Admin12345! (TENANT_ADMIN)");
-  console.log("  emisor@rikuchik.ec     / Admin12345! (ISSUER)");
-  console.log("  auditor@rikuchik.ec    / Admin12345! (AUDITOR)");
+  console.log("  admin@rikuchik.ec      / Admin12345! (UNIVERSITY)");
+  console.log("  emisor@rikuchik.ec     / Admin12345! (OPERATOR)");
+  console.log("  auditor@rikuchik.ec    / Admin12345! (VERIFIER)");
 }
 
 main()

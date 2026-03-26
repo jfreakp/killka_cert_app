@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
+import { ROLE_LABELS, type Role } from "@/src/shared/auth/permissions";
 
 interface NavbarProps {
   title: string;
@@ -22,8 +23,8 @@ export default function Navbar({ title, children }: NavbarProps) {
         .slice(0, 2)
     : "AU";
 
-  const roleName = session?.user
-    ? (session.user as { role?: string }).role?.replace("_", " ") ?? "Usuario"
+  const roleName = session?.user?.role
+    ? ROLE_LABELS[session.user.role as Role] ?? "Usuario"
     : "Usuario";
 
   // Close menu on outside click

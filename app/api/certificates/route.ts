@@ -2,7 +2,7 @@ import { randomUUID, createHash } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/src/lib/prisma";
 import { fail, ok } from "@/src/shared/api/response";
-import { requireRole } from "@/src/shared/auth/guards";
+import { requirePermission } from "@/src/shared/auth/guards";
 import { NotFoundError, ValidationError } from "@/src/shared/errors/app-error";
 
 const createCertificateSchema = z.object({
@@ -12,7 +12,7 @@ const createCertificateSchema = z.object({
 
 export async function GET() {
   try {
-    const session = await requireRole("SUPER_ADMIN", "TENANT_ADMIN", "ISSUER", "AUDITOR");
+    const session = await requirePermission("certificates:list");
 
     const certificates = await prisma.certificate.findMany({
       where: { tenantId: session.user.tenantId },
@@ -31,7 +31,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await requireRole("SUPER_ADMIN", "TENANT_ADMIN", "ISSUER");
+    const session = await requirePermission("certificates:create");
     const body = await request.json();
     const parsed = createCertificateSchema.safeParse(body);
 

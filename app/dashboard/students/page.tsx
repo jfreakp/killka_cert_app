@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/src/shared/ui";
+import { Navbar, PermissionGate } from "@/src/shared/ui";
 
 interface StudentRow {
   id: string;
@@ -73,16 +73,18 @@ export default function StudentsPage() {
             </p>
           </div>
           <div className="flex gap-4">
-            <button className="px-6 py-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low text-primary font-bold transition-all flex items-center gap-2 group">
-              <span className="material-symbols-outlined transition-transform group-hover:-translate-y-0.5">
-                upload_file
-              </span>
-              Cargar Excel
-            </button>
-            <button className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]">
-              <span className="material-symbols-outlined">person_add</span>
-              Agregar Estudiante
-            </button>
+            <PermissionGate permission="students:create">
+              <button className="px-6 py-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low text-primary font-bold transition-all flex items-center gap-2 group">
+                <span className="material-symbols-outlined transition-transform group-hover:-translate-y-0.5">
+                  upload_file
+                </span>
+                Cargar Excel
+              </button>
+              <button className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]">
+                <span className="material-symbols-outlined">person_add</span>
+                Agregar Estudiante
+              </button>
+            </PermissionGate>
           </div>
         </div>
 
@@ -160,9 +162,11 @@ export default function StudentsPage() {
                           <span className="material-symbols-outlined text-[18px]">visibility</span>{" "}
                           Ver
                         </button>
-                        <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                        </button>
+                        <PermissionGate permission="students:edit">
+                          <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          </button>
+                        </PermissionGate>
                       </div>
                     </td>
                   </tr>

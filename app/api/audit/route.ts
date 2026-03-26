@@ -1,10 +1,10 @@
 import { prisma } from "@/src/lib/prisma";
 import { fail, ok } from "@/src/shared/api/response";
-import { requireRole } from "@/src/shared/auth/guards";
+import { requirePermission } from "@/src/shared/auth/guards";
 
 export async function GET() {
   try {
-    const session = await requireRole("SUPER_ADMIN", "TENANT_ADMIN", "AUDITOR");
+    const session = await requirePermission("audit:list");
 
     const logs = await prisma.auditLog.findMany({
       where: { tenantId: session.user.tenantId },

@@ -9,9 +9,9 @@ datasource db {
 
 enum UserRole {
   SUPER_ADMIN
-  TENANT_ADMIN
-  ISSUER
-  AUDITOR
+  UNIVERSITY
+  OPERATOR
+  VERIFIER
 }
 
 enum CertificateStatus {

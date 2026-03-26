@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Navbar } from "@/src/shared/ui";
+import { Navbar, PermissionGate } from "@/src/shared/ui";
 
 interface CertificateRow {
   id: string;
@@ -75,13 +75,15 @@ export default function CertificatesPage() {
               genera un código único de verificación en la red Polygon.
             </p>
           </div>
-          <Link
-            href="/dashboard/certificates/new"
-            className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]"
-          >
-            <span className="material-symbols-outlined">add</span>
-            Nuevo Certificado
-          </Link>
+          <PermissionGate permission="certificates:create">
+            <Link
+              href="/dashboard/certificates/new"
+              className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]"
+            >
+              <span className="material-symbols-outlined">add</span>
+              Nuevo Certificado
+            </Link>
+          </PermissionGate>
         </div>
 
         {/* Grid */}

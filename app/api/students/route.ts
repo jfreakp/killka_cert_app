@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/src/lib/prisma";
 import { fail, ok } from "@/src/shared/api/response";
-import { requireRole } from "@/src/shared/auth/guards";
+import { requirePermission } from "@/src/shared/auth/guards";
 import { ValidationError } from "@/src/shared/errors/app-error";
 
 const createStudentSchema = z.object({
@@ -14,7 +14,7 @@ const createStudentSchema = z.object({
 
 export async function GET() {
   try {
-    const session = await requireRole("SUPER_ADMIN", "TENANT_ADMIN", "ISSUER", "AUDITOR");
+    const session = await requirePermission("students:list");
 
     const students = await prisma.student.findMany({
       where: { tenantId: session.user.tenantId },
@@ -30,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await requireRole("SUPER_ADMIN", "TENANT_ADMIN", "ISSUER");
+    const session = await requirePermission("students:create");
     const body = await request.json();
     const parsed = createStudentSchema.safeParse(body);
 
