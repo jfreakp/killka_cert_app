@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Navbar, PermissionGate } from "@/src/shared/ui";
+import { StudentForm } from "@/src/modules/students/components/student-form";
+import { ExcelUpload } from "@/src/modules/students/components/excel-upload";
 
 interface StudentRow {
   id: string;
@@ -26,20 +28,47 @@ function getInitials(first: string, last: string) {
 export default function StudentsPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [search, setSearch] = useState("");
+  const [showStudentForm, setShowStudentForm] = useState(false);
+  const [showExcelUpload, setShowExcelUpload] = useState(false);
 
-  useEffect(() => {
+  const fetchStudents = () => {
     fetch("/api/students")
       .then((r) => r.json())
       .then((json) => {
         if (json.ok) setStudents(json.data);
       })
       .catch(() => {});
+  };
+  useEffect(() => {
+    fetchStudents();
   }, []);
+
+  async function handleAddStudent(data: any) {
+    const res = await fetch("/api/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("No se pudo agregar el estudiante");
+    fetchStudents();
+  }
+
+  async function handleExcelUpload(students: any[]) {
+    const res = await fetch("/api/students/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ students }),
+    });
+    if (!res.ok) throw new Error("No se pudo importar el archivo");
+    fetchStudents();
+  }
 
   const filtered = students.filter(
     (s) =>
       !search ||
-      `${s.firstName} ${s.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
+      `${s.firstName} ${s.lastName}`
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
       s.studentCode.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -68,19 +97,35 @@ export default function StudentsPage() {
               Explorador del Registro
             </h1>
             <p className="text-on-surface-variant text-lg leading-relaxed">
-              Gestiona los logros académicos en la red Polygon. Sube datos en lote o genera
-              credenciales individuales para el semestre actual.
+              Gestiona los logros académicos en la red Polygon. Sube datos en
+              lote o genera credenciales individuales para el semestre actual.
             </p>
           </div>
           <div className="flex gap-4">
             <PermissionGate permission="students:create">
-              <button className="px-6 py-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low text-primary font-bold transition-all flex items-center gap-2 group">
+              <a
+                href="/plantilla_estudiantes.xlsx"
+                download
+                className="px-6 py-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low text-primary font-bold transition-all flex items-center gap-2 group"
+              >
+                <span className="material-symbols-outlined transition-transform group-hover:-translate-y-0.5">
+                  download
+                </span>
+                Descargar Plantilla
+              </a>
+              <button
+                className="px-6 py-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low text-primary font-bold transition-all flex items-center gap-2 group"
+                onClick={() => setShowExcelUpload(true)}
+              >
                 <span className="material-symbols-outlined transition-transform group-hover:-translate-y-0.5">
                   upload_file
                 </span>
                 Cargar Excel
               </button>
-              <button className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]">
+              <button
+                className="px-8 py-3 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:bg-primary-dim transition-all flex items-center gap-2 hover:scale-[1.02]"
+                onClick={() => setShowStudentForm(true)}
+              >
                 <span className="material-symbols-outlined">person_add</span>
                 Agregar Estudiante
               </button>
@@ -125,7 +170,10 @@ export default function StudentsPage() {
             <tbody className="divide-y divide-surface-container-low">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-8 py-12 text-center text-on-surface-variant">
+                  <td
+                    colSpan={5}
+                    className="px-8 py-12 text-center text-on-surface-variant"
+                  >
                     No hay estudiantes registrados.
                   </td>
                 </tr>
@@ -159,12 +207,16 @@ export default function StudentsPage() {
                     <td className="px-8 py-5 text-right">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button className="px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>{" "}
+                          <span className="material-symbols-outlined text-[18px]">
+                            visibility
+                          </span>{" "}
                           Ver
                         </button>
                         <PermissionGate permission="students:edit">
                           <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                            <span className="material-symbols-outlined text-[18px]">
+                              edit
+                            </span>
                           </button>
                         </PermissionGate>
                       </div>
@@ -193,6 +245,18 @@ export default function StudentsPage() {
           </div>
         </div>
       </div>
+      {showStudentForm && (
+        <StudentForm
+          onSubmit={handleAddStudent}
+          onClose={() => setShowStudentForm(false)}
+        />
+      )}
+      {showExcelUpload && (
+        <ExcelUpload
+          onSubmit={handleExcelUpload}
+          onClose={() => setShowExcelUpload(false)}
+        />
+      )}
     </>
   );
 }
